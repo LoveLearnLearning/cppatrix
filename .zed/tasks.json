@@ -1,7 +1,7 @@
 [
   {
     "label": "Compile and run C++",
-    "command": "out=\"$(dirname \"$ZED_FILE\")/$(basename \"$ZED_FILE\" .cpp).out\"; clang++ -Wall -Wextra -g -std=c++23 -I/opt/homebrew/opt/llvm/include/c++/v1 -L/opt/homebrew/opt/llvm/lib/c++ -Wl,-rpath,/opt/homebrew/opt/llvm/lib/c++ \"$ZED_FILE\" -o \"$out\" && \"$out\"",
+    "command": "out=\"$(dirname \"$ZED_FILE\")/$(basename \"$ZED_FILE\" .cpp).out\"; clang++ -Wall -Wextra -g -std=c++23 -lm -I/opt/homebrew/opt/llvm/include/c++/v1 -L/opt/homebrew/opt/llvm/lib/c++ -Wl,-rpath,/opt/homebrew/opt/llvm/lib/c++ \"$ZED_FILE\" -o \"$out\" && \"$out\"",
     "use_new_terminal": false,
     "allow_concurrent_runs": false,
     "reveal": "always",
@@ -38,6 +38,18 @@
   {
     "label": "Run Python file",
     "command": "python3 \"$ZED_FILE\"",
+    "use_new_terminal": false,
+    "allow_concurrent_runs": false,
+    "reveal": "always",
+    "reveal_target": "dock",
+    "hide": "never",
+    "shell": "system",
+    "show_summary": true,
+    "show_command": true,
+  },
+  {
+    "label": "Cmake Build Project",
+    "command": "cmake -B build",
     "use_new_terminal": false,
     "allow_concurrent_runs": false,
     "reveal": "always",

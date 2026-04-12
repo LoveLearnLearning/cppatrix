@@ -15,11 +15,11 @@ public:
 
     Matrix() : rows(0), cols(0), items(nullptr) {}
 
-    Matrix<T>(size_t r, size_t c) : rows(r), cols(c) {
+    Matrix(size_t r, size_t c) : rows(r), cols(c) {
         items = new T[rows * cols]();
     }
 
-    Matrix<T>(size_t r, size_t c, std::initializer_list<T> init)
+    Matrix(size_t r, size_t c, std::initializer_list<T> init)
                 : rows(r), cols(c), items(new T[r * c]) {
         if (init.size() != r * c) {
             delete[] items;
@@ -53,6 +53,23 @@ public:
             }
         }
     }
+
+    Matrix(const Matrix &other)
+        : rows(other.rows), cols(other.cols), items(nullptr) {
+        if (rows * cols == 0) return;
+        items = new T[rows * cols];
+        for (size_t i = 0; i < rows * cols; ++i) {
+            items[i] = other.items[i];
+        }
+    }
+
+    Matrix(Matrix &&other) noexcept
+        : rows(other.rows), cols(other.cols), items(other.items) {
+            other.rows = 0;
+            other.cols = 0;
+            other.items = nullptr;
+        }
+
 
     ~Matrix() {
         delete[] items;
@@ -121,6 +138,37 @@ public:
             }
         }
         return result;
+    }
+
+    Matrix& operator=(const Matrix &other) {
+        if (this == &other) return *this;
+        T* newitems = nullptr;
+        if (other.rows * other.cols != 0) {
+            newitems = new T[rows * cols];
+            for (size_t i = 0; i < rows * cols; ++i) {
+                newitems[i] = other.items[i];
+            }
+        }
+        delete[] items;
+        items = newitems;
+        rows = other.rows;
+        cols = other.cols;
+        return *this;
+
+    }
+
+    Matrix& operator=(Matrix &&other) noexcept {
+        if (this == &other) return *this;
+
+        delete[] items;
+        rows = other.rows;
+        cols = other.cols;
+        items = other.items;
+        other.rows = 0;
+        other.cols = 0;
+        other.items = nullptr;
+        return *this;
+
     }
 
 };
