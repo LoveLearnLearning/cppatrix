@@ -1,16 +1,15 @@
 #include "./include/matrix.hpp"
 #include "./include/regression.hpp"
 
+#include <cstddef>
 #include <cstdio>
 #include <cstdlib>
 #include <vector>
+#include <iostream>
+
 
 int main() {
 
-    srand(1);
-    double w1 = (double)rand();
-    double w2 = (double)rand();
-    double b1 = (double)rand();
 
     std::vector<std::vector<double>> data = {
         {0, 0, 0},
@@ -19,17 +18,36 @@ int main() {
         {1, 1, 1}
     };
 
+    // std::vector<std::vector<double>> data = {
+    //     {1, 3, 0},
+    //     {2, 2, 0},
+    //     {3, 1, 0},
+    //     {4, 2, 0},
+    //     {5, 3, 0},
+    //     {6, 4, 1},
+    //     {7, 5, 1},
+    //     {8, 6, 1},
+    //     {9, 7, 1},
+    //     {10, 8, 1}
+    // };
 
-    Matrix<double> weight = {
-        {w1 ,w2}
-    };
+    Matrix<double> weight(1, 2);
 
-    Matrix<double> b = {
-        {b1}
-    };
+    Matrix<double> b(1, 1);
+
+    reg::fill_random(weight);
+    reg::fill_random(b);
 
     double cost = reg::MSE<double>(data, weight, b);
 
+    std::cout << weight << std::endl;
+    std::cout << b << std::endl;
     printf("Cost: %.6lf\n", cost);
+
+    for (auto& single : data) {
+        Matrix real = reg::forward(const Matrix<T> &params, const Matrix<T> &weight, const Matrix<T> &bais);
+        sigmoid_mat(real);
+        printf("%lf %lf : %lf\n", single[0], single[1], reg::forward(const Matrix<T> &params, const Matrix<T> &weight, const Matrix<T> &bais))
+    }
 
 }

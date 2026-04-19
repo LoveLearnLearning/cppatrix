@@ -96,8 +96,6 @@ public:
         return result;
     }
 
-
-
     Matrix& operator+=(const Matrix &rhs) {
         if (rows != rhs.rows || cols != rhs.cols) {
             throw std::invalid_argument("Matrix +=: dimension mismatch");
@@ -144,7 +142,7 @@ public:
         if (this == &other) return *this;
         T* newitems = nullptr;
         if (other.rows * other.cols != 0) {
-            newitems = new T[rows * cols];
+            newitems = new T[other.rows * other.cols];
             for (size_t i = 0; i < rows * cols; ++i) {
                 newitems[i] = other.items[i];
             }
@@ -170,6 +168,25 @@ public:
         return *this;
 
     }
+
+    void transfer() {
+        size_t new_rows = cols;
+        size_t new_cols = rows;
+
+        T *new_items = new T[rows * cols];
+        size_t i = 0;
+
+        for (size_t j = 0; j < cols; ++j) {
+            for (size_t k = 0; k < rows; ++k) {
+                new_items[i++] = items[k * cols + j];
+            }
+        }
+        delete[] items;
+        cols = new_cols;
+        rows = new_rows;
+        items = new_items;
+    }
+
 
 };
 

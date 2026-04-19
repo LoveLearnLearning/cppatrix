@@ -10,6 +10,8 @@ namespace reg {
 
     double sigmoidf2 (double x);
 
+    double randf(double down, double top);
+
     template<typename T>
     void sigmoid_mat(const Matrix<T> &mat) {
         for (size_t i = 0; i < mat.rows * mat.cols; ++i) {
@@ -44,6 +46,20 @@ namespace reg {
 
         return diff / data.size();
     }
+    template<typename T>
+    void dMSE() {}
+
+
+    template<typename T>
+    void fill_random(Matrix<T> &mat) {
+        for (size_t i = 0; i < mat.rows; ++i) {
+            for (size_t j = 0; j < mat.cols; ++j) {
+                mat(i, j) = randf(0.0, 1.0);
+            }
+        }
+    }
+
+
 
 }
 
