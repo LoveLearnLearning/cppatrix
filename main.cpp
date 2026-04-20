@@ -4,14 +4,13 @@
 #include <cstddef>
 #include <cstdio>
 #include <cstdlib>
-#include <vector>
 #include <iostream>
 
 
 int main() {
 
 
-    std::vector<std::vector<double>> data = {
+    Matrix<double> data = {
         {0, 0, 0},
         {1, 0, 1},
         {0, 1, 1},
@@ -31,6 +30,16 @@ int main() {
     //     {10, 8, 1}
     // };
 
+
+    Matrix<double> block = data.take_block(1, 1, 4, 2);
+
+    Matrix<double> new_block = block * 2;
+
+    std::cout << block << std::endl;
+    std::cout << new_block << std::endl;
+
+    #if 0
+
     Matrix<double> weight(1, 2);
 
     Matrix<double> b(1, 1);
@@ -49,5 +58,7 @@ int main() {
         sigmoid_mat(real);
         printf("%lf %lf : %lf\n", single[0], single[1], reg::forward(const Matrix<T> &params, const Matrix<T> &weight, const Matrix<T> &bais))
     }
+
+    #endif
 
 }

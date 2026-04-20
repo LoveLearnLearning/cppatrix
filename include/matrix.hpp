@@ -6,6 +6,14 @@
 #include <ostream>
 #include <stdexcept>
 
+
+
+
+template<typename T>
+class ColIterator {
+
+};
+
 template<typename T>
 class Matrix {
 public:
@@ -76,6 +84,31 @@ public:
         items = nullptr;
     }
 
+    class RowIterator {
+    public:
+        size_t current;
+        Matrix& mat;
+
+        RowIterator(Matrix &_mat, size_t val) : mat(_mat), current(val) {}
+
+        Matrix operator*() {
+            Matrix result(1, mat.cols);
+            for (size_t i = 0; i < mat.cols; ++i) {
+                result(1, i + 1) = mat(current + 1, i + 1);
+            }
+            return result;
+        }
+
+        RowIterator& operator++() {
+            ++current;
+            return *this;
+        }
+
+        bool operator!=(const RowIterator& other) {
+            return current != other.current;
+        }
+    };
+
 
     T& operator()(size_t r, size_t c) {
         if (r >= rows || c >= cols) throw std::out_of_range("Matrix index out of range");
@@ -138,12 +171,29 @@ public:
         return result;
     }
 
+    Matrix operator*(T other) const {
+        Matrix result = *this;
+
+        for (size_t i = 0; i < result.cols * result.rows; ++i) {
+            result.items[i] *= other;
+        }
+
+        return result;
+    }
+
+    Matrix operator*=(T other) const {
+        for (size_t i = 0; i < cols * rows; ++i) {
+            items[i] *= other;
+        }
+        return *this;
+    }
+
     Matrix& operator=(const Matrix &other) {
         if (this == &other) return *this;
         T* newitems = nullptr;
         if (other.rows * other.cols != 0) {
             newitems = new T[other.rows * other.cols];
-            for (size_t i = 0; i < rows * cols; ++i) {
+            for (size_t i = 0; i < other.rows * other.cols; ++i) {
                 newitems[i] = other.items[i];
             }
         }
@@ -169,9 +219,10 @@ public:
 
     }
 
-    void transfer() {
+    const Matrix& transpose() const {
         size_t new_rows = cols;
         size_t new_cols = rows;
+
 
         T *new_items = new T[rows * cols];
         size_t i = 0;
@@ -181,23 +232,43 @@ public:
                 new_items[i++] = items[k * cols + j];
             }
         }
-        delete[] items;
-        cols = new_cols;
-        rows = new_rows;
-        items = new_items;
+        Matrix result(new_rows, new_cols, new_items);
     }
+
+    Matrix take_block(size_t s_row, size_t s_col, size_t e_row, size_t e_col) {
+
+        Matrix result(e_row - s_row + 1, (e_col - s_col + 1));
+
+        T *new_items = new T[(e_row - s_row + 1) * (e_col - s_col + 1)];
+        delete[] result.items;
+        result.items = new_items;
+
+        for (size_t i = 0; i < e_row - s_row + 1; ++i) {
+            for (size_t j = 0; j < e_col - s_col + 1; ++j) {
+                result(i, j) = (*this)(s_row + i - 1, s_col + j - 1);
+            }
+        }
+
+        return result;
+
+    }
+
+
 
 
 };
 
 template<typename T>
 std::ostream& operator<<(std::ostream& os, const Matrix<T>& m) {
+    os << "[\n";
     for (size_t i = 0; i < m.rows; ++i) {
+        os << "    ";
         for (size_t j = 0; j < m.cols; ++j) {
             os << m(i, j) << (j + 1 == m.cols ? "" : " ");
         }
         os << '\n';
     }
+    os << "]\n";
     return os;
 }
 
