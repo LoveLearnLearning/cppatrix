@@ -2,7 +2,6 @@
 #include "./include/regression.hpp"
 
 #include <cstddef>
-#include <cstdio>
 #include <cstdlib>
 #include <iostream>
 
@@ -37,6 +36,14 @@ int main() {
 
     std::cout << block << std::endl;
     std::cout << new_block << std::endl;
+
+    for (auto row : block.row_view()) {
+        std::cout << row << std::endl;
+    }
+
+    for (auto col : block.col_view()) {
+        std::cout << col << std::endl;
+    }
 
     #if 0
 

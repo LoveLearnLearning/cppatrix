@@ -7,13 +7,6 @@
 #include <stdexcept>
 
 
-
-
-template<typename T>
-class ColIterator {
-
-};
-
 template<typename T>
 class Matrix {
 public:
@@ -87,14 +80,14 @@ public:
     class RowIterator {
     public:
         size_t current;
-        Matrix& mat;
+        Matrix* mat;
 
-        RowIterator(Matrix &_mat, size_t val) : mat(_mat), current(val) {}
+        RowIterator(Matrix *_mat, size_t val) : mat(_mat), current(val) {}
 
         Matrix operator*() {
-            Matrix result(1, mat.cols);
-            for (size_t i = 0; i < mat.cols; ++i) {
-                result(1, i + 1) = mat(current + 1, i + 1);
+            Matrix result(1, mat->cols);
+            for (size_t i = 0; i < mat->cols; ++i) {
+                result(0, i) = (*mat)(current, i);
             }
             return result;
         }
@@ -108,6 +101,66 @@ public:
             return current != other.current;
         }
     };
+
+    class ColIterator {
+    private:
+
+    size_t current;
+    Matrix* mat;
+
+    public:
+
+    ColIterator(Matrix *_mat, size_t val) : mat(_mat), current(val) {}
+
+    Matrix operator*() {
+        Matrix result(mat->rows, 1);
+        for (size_t i = 0; i < mat->rows; ++i) {
+            result(i, 0) = (*mat)(i, current);
+        }
+        return result;
+    }
+
+    ColIterator& operator++() {
+        ++current;
+        return *this;
+    }
+
+    bool operator!=(const ColIterator& other) {
+        return current != other.current;
+    }
+
+    };
+
+    class ColView {
+    private:
+        Matrix *mat;
+
+    public:
+
+        ColView(Matrix *_mat) : mat(_mat) {}
+
+        ColIterator begin() { return ColIterator(this->mat, 0); }
+        ColIterator end() { return ColIterator(this->mat, this->mat->cols); }
+
+    };
+
+    ColView col_view() { return ColView(this); }
+
+    class RowView {
+    private:
+        Matrix *mat;
+
+    public:
+
+        RowView(Matrix *_mat) : mat(_mat) {}
+
+        RowIterator begin() { return RowIterator(this->mat, 0); }
+        RowIterator end() { return RowIterator(this->mat, this->mat->rows); }
+
+
+    };
+
+    RowView row_view() { return RowView(this); }
 
 
     T& operator()(size_t r, size_t c) {
@@ -252,8 +305,6 @@ public:
         return result;
 
     }
-
-
 
 
 };
