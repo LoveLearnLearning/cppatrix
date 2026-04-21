@@ -7,7 +7,8 @@ set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
 file(GLOB SRC_FILES
     "${CMAKE_SOURCE_DIR}/main.cpp"
-    "${CMAKE_SOURCE_DIR}/sources/*.cpp"
+    "${CMAKE_SOURCE_DIR}/sources/functions.cpp"
+    "${CMAKE_SOURCE_DIR}/sources/regression.cpp"
 )
 
 

@@ -14,15 +14,32 @@ namespace reg {
     }
 
     template<typename T>
-    T MSE(const Matrix<T> &X, const Matrix<T> &Y, const Matrix<T> &weight, const Matrix<T> &bias) {
-        T diff = 0;
-        for (Matrix<T> row : X) {
-
-        }
-
+    T forward(Matrix<T> &row, T w) {
+        return w * row(0, 0);
     }
+
     template<typename T>
-    void dMSE() {}
+    T MSE(Matrix<T> &train, T w) {
+        double diff = 0.f;
+        double cost = 0.f;
+
+        for (auto row : train.row_view()) {
+            diff += pow(forward(row, w) - row(0, 1), 2);
+            cost = diff / train.rows;
+        }
+        return cost;
+    }
+
+    template<typename T>
+    T dMSE(Matrix<T> &train, T w, double l_r = 1e-3) {
+        double gradient = 0.f;
+        double diff = 0.f;
+        for (auto row : train.row_view()) {
+            diff += (w * row(0, 0) - row(0, 1)) * row(0, 0);
+        }
+        gradient = 2 * diff / train.rows;
+        return w - l_r * gradient;
+    }
 
 
     template<typename T>

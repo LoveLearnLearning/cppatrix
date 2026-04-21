@@ -2,19 +2,30 @@
 #include <iostream>
 
 
+
 int main() {
 
-    Matrix<int> mat1 = {
-        {1, 2},
-        {2, 1}
-    };
-
-    Matrix<int> mat3 = {
-        {2, 4},
-        {1, 3}
+    Matrix<double> mat1 = {
+        {1, 2, -1},
+        {2, 1, -3},
     };
 
 
-    Matrix<int> mat2 = mat1 + mat3;
+    Matrix<double> mat2 = {
+        {1, 3},
+        {-1, 1},
+        {2, -1},
+    };
+
+    Matrix<double> mat4 = {
+        {1, 0, -1},
+        {2, -1, -3},
+    };
+
+    auto mat3 = mat1 * mat2;
+
+    auto mat5 = mat1 + mat4;
+
+    std::cout << mat3;
 
 }

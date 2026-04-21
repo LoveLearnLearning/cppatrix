@@ -71,7 +71,6 @@ public:
             other.items = nullptr;
         }
 
-
     ~Matrix() {
         delete[] items;
         items = nullptr;
