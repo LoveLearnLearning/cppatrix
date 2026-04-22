@@ -1,5 +1,5 @@
-#include "./include/matrix.hpp"
-#include "./include/functions.hpp"
+#include "matrix.hpp"
+#include "functions.hpp"
 #include "regression.hpp"
 
 #include <cstddef>
@@ -21,7 +21,6 @@ int main() {
 
     std::println("WeightBefore: {}", w);
     std::println("Cost: {}", reg::MSE(train, w));
-
     for (size_t i = 0; i < 1000; ++i) {
         w = reg::dMSE(train, w, 1e-3);
         std::println("Cost: {}", reg::MSE(train, w));

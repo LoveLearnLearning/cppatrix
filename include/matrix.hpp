@@ -1,5 +1,5 @@
-#ifndef MATRIX_H_
-#define MATRIX_H_
+#ifndef MATRIX_HPP_
+#define MATRIX_HPP_
 
 #include <cstddef>
 #include <initializer_list>
@@ -141,6 +141,17 @@ public:
         ColIterator begin() { return ColIterator(this->mat, 0); }
         ColIterator end() { return ColIterator(this->mat, this->mat->cols); }
 
+        Matrix operator[] (size_t col) {
+            size_t row = this->mat->rows;
+            Matrix result(row, 1);
+            T *newitems = new T[row];
+            for (size_t i = 0; i < row; ++i) {
+                newitems[i] = this->mat->items[col * row + i];
+            }
+            result.items = newitems;
+            return result;
+        }
+
     };
 
     ColView col_view() { return ColView(this); }
@@ -156,7 +167,16 @@ public:
         RowIterator begin() { return RowIterator(this->mat, 0); }
         RowIterator end() { return RowIterator(this->mat, this->mat->rows); }
 
-
+        Matrix operator[] (size_t row) {
+            size_t col = this->mat->cols;
+            Matrix result(1, col);
+            T *newitems = new T[col];
+            for (size_t i = 0; i < col; ++i) {
+                newitems[i] = (this->mat->items)[col * row + i];
+            }
+            result.items = newitems;
+            return result;
+        }
     };
 
     RowView row_view() { return RowView(this); }
@@ -271,10 +291,11 @@ public:
 
     }
 
-    const Matrix& transpose() const {
+    const Matrix transpose() const {
         size_t new_rows = cols;
         size_t new_cols = rows;
 
+        Matrix result(new_rows, new_cols);
 
         T *new_items = new T[rows * cols];
         size_t i = 0;
@@ -284,7 +305,8 @@ public:
                 new_items[i++] = items[k * cols + j];
             }
         }
-        Matrix result(new_rows, new_cols, new_items);
+        result.items = new_items;
+        return result;
     }
 
     Matrix take_block(size_t s_row, size_t s_col, size_t e_row, size_t e_col) {
@@ -297,7 +319,7 @@ public:
 
         for (size_t i = 0; i < e_row - s_row + 1; ++i) {
             for (size_t j = 0; j < e_col - s_col + 1; ++j) {
-                result(i, j) = (*this)(s_row + i - 1, s_col + j - 1);
+                result(i, j) = (*this)(s_row + i, s_col + j);
             }
         }
 
@@ -322,4 +344,4 @@ std::ostream& operator<<(std::ostream& os, const Matrix<T>& m) {
     return os;
 }
 
-#endif //MATRIX_H_
+#endif //MATRIX_HPP_

@@ -11,9 +11,9 @@ namespace func {
 
 
     template<typename T>
-    void randmat(const Matrix<T> &mat, double down, double top) {
-        T temp = mat.items;
-        T newitems = new T[mat.rows * mat.cols];
+    void randmat(Matrix<T> &mat, double down, double top) {
+        T *temp = mat.items;
+        T *newitems = new T[mat.rows * mat.cols];
         for (size_t i = 0; i < mat.rows * mat.cols; ++i) {
             newitems[i] = randf(down, top);
         }

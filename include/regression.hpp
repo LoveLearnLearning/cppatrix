@@ -1,5 +1,5 @@
-#ifndef REGRESSION_H_
-#define REGRESSION_H_
+#ifndef REGRESSION_HPP_
+#define REGRESSION_HPP_
 
 #include "matrix.hpp"
 #include "functions.hpp"
@@ -50,6 +50,36 @@ namespace reg {
             }
         }
     }
+
+    template<typename T>
+    T MSE(Matrix<T> &x_t, Matrix<T> &y_t, Matrix<T> &w, Matrix<T> &b) {
+        double diff = 0.f;
+        double cost = 0.f;
+
+        for (size_t i = 0; i < x_t.rows; ++i) {
+            double y_p = func::sigmoidf2((w * x_t.row_view()[i].transpose() + b)(0, 0));
+            diff += pow(y_t(i, 0) - y_p, 2);
+        }
+        return diff / x_t.rows;
+    }
+
+    template<typename T>
+    Matrix<T> dMSE(Matrix<T> &x_t, Matrix<T> &y_t, Matrix<T> &w, Matrix<T> &b, double l_r = 1e-3) {
+
+        Matrix<double> grad(x_t.row_view()[0].cols, x_t.row_view()[0].rows);
+        Matrix<double> d(x_t.row_view()[0].cols, x_t.row_view()[0].rows);
+
+        for (size_t n = 0; n < 1000; ++n) {
+            for (size_t i = 0; i < x_t.rows; ++i) {
+                d += x_t.row_view()[i].transpose() * (w * x_t.row_view()[i].transpose() + b)(0, 0);
+            }
+
+            grad = d * (2.0 / x_t.rows);
+            w -= grad.transpose() * l_r;
+        }
+        return w;
+    }
+
 }
 
-#endif //REGRESSION_H_
+#endif //REGRESSION_HPP_
