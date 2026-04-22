@@ -69,14 +69,13 @@ namespace reg {
         Matrix<double> grad(x_t.row_view()[0].cols, x_t.row_view()[0].rows);
         Matrix<double> d(x_t.row_view()[0].cols, x_t.row_view()[0].rows);
 
-        for (size_t n = 0; n < 1000; ++n) {
-            for (size_t i = 0; i < x_t.rows; ++i) {
-                d += x_t.row_view()[i].transpose() * (w * x_t.row_view()[i].transpose() + b)(0, 0);
-            }
-
-            grad = d * (2.0 / x_t.rows);
-            w -= grad.transpose() * l_r;
+        for (size_t i = 0; i < x_t.rows; ++i) {
+            d += x_t.row_view()[i].transpose() * (w * x_t.row_view()[i].transpose() + b)(0, 0);
         }
+
+        grad = d * (2.0 / x_t.rows);
+        w -= grad.transpose() * l_r;
+
         return w;
     }
 
