@@ -24,7 +24,8 @@ int main() {
 
     auto mat3 = mat1 * mat2;
 
-    auto mat5 = mat1 + mat4;
+
+    auto mat6 = mat5.take_block(0, 0, 1, 1);
 
     std::cout << mat3;
 
