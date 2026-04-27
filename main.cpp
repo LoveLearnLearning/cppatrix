@@ -32,7 +32,7 @@ int main() {
     Matrix<double> d(x_t.row_view()[0].cols, x_t.row_view()[0].rows);
 
 
-    for (size_t n = 0; n < 1000; ++n) {
+    for (size_t n = 0; n < 1000 * 10000; ++n) {
         w = reg::dMSE(x_t, y_t, w, b, l_r);
         cost = reg::MSE(x_t, y_t, w, b);
         std::cout << "Cost: " << cost << std::endl;

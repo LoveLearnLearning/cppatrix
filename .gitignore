@@ -2,3 +2,6 @@
 .zed/
 build/
 .cache/
+
+*.out.dSYM/
+*.out

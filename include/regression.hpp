@@ -53,11 +53,11 @@ namespace reg {
 
     template<typename T>
     T MSE(Matrix<T> &x_t, Matrix<T> &y_t, Matrix<T> &w, Matrix<T> &b) {
-        double diff = 0.f;
-        double cost = 0.f;
+        T diff = 0.f;
+        T cost = 0.f;
 
         for (size_t i = 0; i < x_t.rows; ++i) {
-            double y_p = func::sigmoidf2((w * x_t.row_view()[i].transpose() + b)(0, 0));
+            T y_p = func::sigmoidf2((w * x_t.row_view()[i].transpose() + b)(0, 0));
             diff += pow(y_t(i, 0) - y_p, 2);
         }
         return diff / x_t.rows;
@@ -66,11 +66,16 @@ namespace reg {
     template<typename T>
     Matrix<T> dMSE(Matrix<T> &x_t, Matrix<T> &y_t, Matrix<T> &w, Matrix<T> &b, double l_r = 1e-3) {
 
-        Matrix<double> grad(x_t.row_view()[0].cols, x_t.row_view()[0].rows);
-        Matrix<double> d(x_t.row_view()[0].cols, x_t.row_view()[0].rows);
+        Matrix<T> grad(x_t.row_view()[0].cols, x_t.row_view()[0].rows);
+        Matrix<T> d(x_t.row_view()[0].cols, x_t.row_view()[0].rows);
+
 
         for (size_t i = 0; i < x_t.rows; ++i) {
-            d += x_t.row_view()[i].transpose() * (w * x_t.row_view()[i].transpose() + b)(0, 0);
+            Matrix<T> x = x_t.row_view()[i].transpose();
+            T forward = (w * x_t.row_view()[i].transpose() + b)(0, 0);
+            d +=  x * func::sigmoidf2(forward)
+                    * (1 - func::sigmoidf2(forward))
+                    * (func::sigmoidf2(forward) - y_t(i, 0));
         }
 
         grad = d * (2.0 / x_t.rows);
