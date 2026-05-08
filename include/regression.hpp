@@ -9,17 +9,17 @@
 namespace reg {
 
     template<typename T>
-    Matrix<T> forward(const Matrix<T> &params, const Matrix<T> &weight, const Matrix<T> &bais) {
+    mat::Matrix<T> forward(const mat::Matrix<T> &params, const mat::Matrix<T> &weight, const mat::Matrix<T> &bais) {
         return weight * params + bais;
     }
 
     template<typename T>
-    T forward(Matrix<T> &row, T w) {
+    T forward(mat::Matrix<T> &row, T w) {
         return w * row(0, 0);
     }
 
     template<typename T>
-    T MSE(Matrix<T> &train, T w) {
+    T MSE(mat::Matrix<T> &train, T w) {
         double diff = 0.f;
         double cost = 0.f;
 
@@ -31,7 +31,7 @@ namespace reg {
     }
 
     template<typename T>
-    T dMSE(Matrix<T> &train, T w, double l_r = 1e-3) {
+    T dMSE(mat::Matrix<T> &train, T w, double l_r = 1e-3) {
         double gradient = 0.f;
         double diff = 0.f;
         for (auto row : train.row_view()) {
@@ -43,7 +43,7 @@ namespace reg {
 
 
     template<typename T>
-    void fill_random(Matrix<T> &mat) {
+    void fill_random(mat::Matrix<T> &mat) {
         for (size_t i = 0; i < mat.rows; ++i) {
             for (size_t j = 0; j < mat.cols; ++j) {
                 mat(i, j) = func::randf(0.0, 1.0);
@@ -52,7 +52,7 @@ namespace reg {
     }
 
     template<typename T>
-    T MSE(Matrix<T> &x_t, Matrix<T> &y_t, Matrix<T> &w, Matrix<T> &b) {
+    T MSE(mat::Matrix<T> &x_t, mat::Matrix<T> &y_t, mat::Matrix<T> &w, mat::Matrix<T> &b) {
         T diff = 0.f;
         T cost = 0.f;
 
@@ -64,14 +64,14 @@ namespace reg {
     }
 
     template<typename T>
-    Matrix<T> dMSE(Matrix<T> &x_t, Matrix<T> &y_t, Matrix<T> &w, Matrix<T> &b, double l_r = 1e-3) {
+    mat::Matrix<T> dMSE(mat::Matrix<T> &x_t, mat::Matrix<T> &y_t, mat::Matrix<T> &w, mat::Matrix<T> &b, double l_r = 1e-3) {
 
-        Matrix<T> grad(x_t.row_view()[0].cols, x_t.row_view()[0].rows);
-        Matrix<T> d(x_t.row_view()[0].cols, x_t.row_view()[0].rows);
+        mat::Matrix<T> grad(x_t.row_view()[0].cols, x_t.row_view()[0].rows);
+        mat::Matrix<T> d(x_t.row_view()[0].cols, x_t.row_view()[0].rows);
 
 
         for (size_t i = 0; i < x_t.rows; ++i) {
-            Matrix<T> x = x_t.row_view()[i].transpose();
+            mat::Matrix<T> x = x_t.row_view()[i].transpose();
             T forward = (w * x_t.row_view()[i].transpose() + b)(0, 0);
             d +=  x * func::sigmoidf2(forward)
                     * (1 - func::sigmoidf2(forward))

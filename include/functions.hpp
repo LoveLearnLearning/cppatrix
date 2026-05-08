@@ -11,7 +11,7 @@ namespace func {
 
 
     template<typename T>
-    void randmat(Matrix<T> &mat, double down, double top) {
+    void randmat(mat::Matrix<T> &mat, double down, double top) {
         T *temp = mat.items;
         T *newitems = new T[mat.rows * mat.cols];
         for (size_t i = 0; i < mat.rows * mat.cols; ++i) {
@@ -22,7 +22,7 @@ namespace func {
     }
 
     template<typename T>
-    void sigmoid_mat(const Matrix<T> &mat) {
+    void sigmoid_mat(const mat::Matrix<T> &mat) {
         for (size_t i = 0; i < mat.rows * mat.cols; ++i) {
             mat.items[i] = sigmoidf2(mat.items[i]);
         }

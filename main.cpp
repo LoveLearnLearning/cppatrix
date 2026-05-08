@@ -1,46 +1,57 @@
-#include "functions.hpp"
+#include "graph.hpp"
 #include "matrix.hpp"
+#include "functions.hpp"
 #include "regression.hpp"
+#include "raylib.h"
+
 #include <cstddef>
-#include <iostream>
+#include <cstdlib>
+#include <print>
+
 
 int main() {
-    Matrix<double> train = {
-        {0, 0, 0},
-        {0, 1, 0},
-        {1, 0, 0},
-        {1, 1, 1},
+
+    mat::Matrix<double> train = {
+        {1, 2},
+        {2, 4},
+        {3, 6},
+        {4, 8},
+        {5, 10},
     };
 
-    Matrix<double> w(1, 2);
-    Matrix<double> b(1, 1);
+    double w = func::randf(1, 10);
 
-    func::randmat(w, 0, 10);
-    func::randmat(b, 0, 10);
+    std::println("WeightBefore: {}", w);
+    std::println("Cost: {}", reg::MSE(train, w));
 
-    Matrix<double> x_t = train.take_block(0, 0, 3, 1);
-    Matrix<double> y_t = train.take_block(0, 2, 3, 2);
+    float width  = 800;
+    float height = 600;
 
-    double cost = reg::MSE(x_t, y_t, w, b);
+    InitWindow(width, height, "Machine Learning");
 
-    std::cout << "w: " << w << std::endl;
-    std::cout << "b: " << b << std::endl;
-    std::cout << "Cost: " << cost << std::endl;
+    while (!WindowShouldClose()) {
+        BeginDrawing();
+            ClearBackground(WHITE);
+            graph::DrawAxis(width, height);
+            graph::DrawFunction(width, height, -100, 100, [&](double x) {
+                return 0.005 * reg::MSE(train, x);
+            });
 
-    double l_r = 1e-3;
-    Matrix<double> grad(x_t.row_view()[0].cols, x_t.row_view()[0].rows);
-    Matrix<double> d(x_t.row_view()[0].cols, x_t.row_view()[0].rows);
+            for (size_t i = 0; i < 100; ++i) {
+                w = reg::dMSE(train, w, 1e-3);
+                std::println("Cost: {}", reg::MSE(train, w));
+            }
 
+            for (auto row : train.row_view()) {
+                std::println("{} -> {} : {}", row(0, 0), reg::forward(row, w), row(0, 1));
+            }
 
-    for (size_t n = 0; n < 1000 * 10000; ++n) {
-        w = reg::dMSE(x_t, y_t, w, b, l_r);
-        cost = reg::MSE(x_t, y_t, w, b);
-        std::cout << "Cost: " << cost << std::endl;
+            std::println("WeightAfter: {}", w);
+            std::println("Cost: {}", reg::MSE(train, w));
+        EndDrawing();
+
     }
-    std::cout << "Gradient: " << grad << std::endl;
-    std::cout << "w: " << w << std::endl;
-    std::cout << "b: " << b << std::endl;
-    std::cout << "Cost: " << cost << std::endl;
+
 
 
 }

@@ -6,11 +6,11 @@
 
 
 int main() {
-    Matrix<double> mat1 = {
+    mat::Matrix<double> mat1 = {
         {1, 0, 0, 0, 5, 3, 0, 0, 1, 0, 0, 0}
     };
 
-    Matrix<double> mat2 = {
+    mat::Matrix<double> mat2 = {
         {3, 0, 0, 0, 2, 0, 0, 1, 0, 1, 0, 0, 0}
     };
 
