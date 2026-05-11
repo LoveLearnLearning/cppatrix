@@ -27,6 +27,18 @@ namespace func {
             mat.items[i] = sigmoidf2(mat.items[i]);
         }
     }
+
+    template<typename T>
+    T dist(mat::Matrix<T> &mat1, mat::Matrix<T> &mat2) {
+        if (mat1.rows != 1 && mat2.rows != 1 && mat1.cols != mat2.cols) {
+            throw std::invalid_argument("Distance dimension do not match!");
+        }
+        double sum = 0.f;
+        for (size_t i = 0; i < mat1.cols; ++i) {
+            sum += pow((mat1(0, i) - mat2(0, i)), 2);
+        }
+        return pow(sum, 1 / mat1.cols);
+    }
 }
 
 #endif // FUNCTIONS_HPP_
