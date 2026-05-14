@@ -156,210 +156,238 @@ template <typename T> class Matrix {
         RowIterator begin() { return RowIterator(this->mat, 0); }
         RowIterator end() { return RowIterator(this->mat, this->mat->rows); }
 
-        Matrix operator[](size_t row) {
-            size_t col = this->mat->cols;
-            Matrix result(1, col);
-            T *newitems = new T[col];
-            for (size_t i = 0; i < col; ++i) {
-                newitems[i] = (this->mat->items)[col * row + i];
+        class RowProxy {
+            T *data;
+            size_t cols;
+
+          public:
+            RowProxy(T *d, size_t c) : data(d), cols(c) {}
+
+            T &operator[](size_t col) { return data[col]; }
+            const T &operator[](size_t col) const { return data[col]; }
+
+            operator Matrix() const {
+                Matrix result(1, cols);
+                for (size_t i = 0; i < cols; ++i)
+                    result.items[i] = data[i];
+                return result;
             }
-            result.items = newitems;
-            return result;
+
+            RowProxy &operator=(const Matrix &other) {
+                if (other.rows != 1 || other.cols != cols)
+                    throw std::invalid_argument("RowProxy =: dimension mismatch");
+                for (size_t i = 0; i < cols; ++i)
+                    data[i] = other.items[i];
+                return *this;
+            }
+
+            RowProxy &operator=(const RowProxy &other) {
+                if (other.cols != cols)
+                    throw std::invalid_argument("RowProxy =: dimension mismatch");
+                for (size_t i = 0; i < cols; ++i)
+                    data[i] = other.data[i];
+                return *this;
+            }
         };
 
-        RowView row_view() { return RowView(this); }
-
-        T &operator()(size_t r, size_t c) {
-            if (r >= rows || c >= cols)
-                throw std::out_of_range("Matrix index out of range");
-            return items[r * cols + c];
-        }
-
-        const T &operator()(size_t r, size_t c) const {
-            if (r >= rows || c >= cols)
-                throw std::out_of_range("Matrix index out of range");
-            return items[r * cols + c];
-        }
-
-        Matrix operator+(const Matrix &rhs) const {
-            if (rows != rhs.rows || cols != rhs.cols) {
-                throw std::invalid_argument("Matrix +: dimension mismatch");
-            }
-            Matrix result(rows, cols);
-            for (size_t i = 0; i < rows * cols; ++i)
-                result.items[i] = items[i] + rhs.items[i];
-            return result;
-        }
-
-        Matrix &operator+=(const Matrix &rhs) {
-            if (rows != rhs.rows || cols != rhs.cols) {
-                throw std::invalid_argument("Matrix +=: dimension mismatch");
-            }
-            for (size_t i = 0; i < rows * cols; ++i)
-                items[i] += rhs.items[i];
-            return *this;
-        }
-
-        Matrix operator-(const Matrix &rhs) const {
-            if (rows != rhs.rows || cols != rhs.cols) {
-                throw std::invalid_argument("Matrix -: dimension mismatch");
-            }
-            Matrix result(rows, cols);
-            for (size_t i = 0; i < rows * cols; ++i)
-                result.items[i] = items[i] - rhs.items[i];
-            return result;
-        }
-
-        Matrix &operator-=(const Matrix &rhs) {
-            if (rows != rhs.rows || cols != rhs.cols) {
-                throw std::invalid_argument("Matrix -=: dimension mismatch");
-            }
-            for (size_t i = 0; i < rows * cols; ++i)
-                items[i] -= rhs.items[i];
-            return *this;
-        }
-
-        Matrix operator*(const Matrix &rhs) const {
-            if (cols != rhs.rows) {
-                throw std::invalid_argument("Matrix *: dimension mismatch");
-            }
-            Matrix result(rows, rhs.cols);
-            for (size_t i = 0; i < rows; ++i) {
-                for (size_t j = 0; j < rhs.cols; ++j) {
-                    T sum = T{};
-                    for (size_t k = 0; k < cols; ++k) {
-                        sum += (*this)(i, k) * rhs(k, j);
-                    }
-                    result(i, j) = sum;
-                }
-            }
-            return result;
-        }
-
-        Matrix operator*(T other) const {
-            Matrix result = *this;
-
-            for (size_t i = 0; i < result.cols * result.rows; ++i) {
-                result.items[i] *= other;
-            }
-
-            return result;
-        }
-
-        Matrix operator*=(T other) const {
-            for (size_t i = 0; i < cols * rows; ++i) {
-                items[i] *= other;
-            }
-            return *this;
-        }
-
-        Matrix operator/(T other) const {
-            Matrix result = *this;
-
-            for (size_t i = 0; i < result.cols * result.rows; ++i) {
-                result.items[i] /= other;
-            }
-
-            return result;
-        }
-
-        Matrix operator/=(T other) const {
-            for (size_t i = 0; i < cols * rows; ++i) {
-                items[i] /= other;
-            }
-            return *this;
-        }
-
-        Matrix &operator=(const Matrix &other) {
-            if (this == &other)
-                return *this;
-            T *newitems = nullptr;
-            if (other.rows * other.cols != 0) {
-                newitems = new T[other.rows * other.cols];
-                for (size_t i = 0; i < other.rows * other.cols; ++i) {
-                    newitems[i] = other.items[i];
-                }
-            }
-            delete[] items;
-            items = newitems;
-            rows = other.rows;
-            cols = other.cols;
-            return *this;
-        }
-
-        Matrix &operator=(Matrix &&other) noexcept {
-            if (this == &other)
-                return *this;
-
-            delete[] items;
-            rows = other.rows;
-            cols = other.cols;
-            items = other.items;
-            other.rows = 0;
-            other.cols = 0;
-            other.items = nullptr;
-            return *this;
-        }
-
-        bool operator==(Matrix &other) noexcept {
-            if (rows != other.rows || cols != other.cols) {
-                return false;
-            }
-            for (size_t i = 0; i < rows * cols; ++i) {
-                if (items[i] != other.items[i])
-                    return false;
-            }
-            return true;
-        }
-
-        const Matrix transpose() const {
-            size_t new_rows = cols;
-            size_t new_cols = rows;
-
-            Matrix result(new_rows, new_cols);
-
-            T *new_items = new T[rows * cols];
-            size_t i = 0;
-
-            for (size_t j = 0; j < cols; ++j) {
-                for (size_t k = 0; k < rows; ++k) {
-                    new_items[i++] = items[k * cols + j];
-                }
-            }
-            result.items = new_items;
-            return result;
-        }
-
-        Matrix take_block(size_t s_row, size_t s_col, size_t e_row, size_t e_col) {
-
-            Matrix result(e_row - s_row + 1, (e_col - s_col + 1));
-
-            T *new_items = new T[(e_row - s_row + 1) * (e_col - s_col + 1)];
-            delete[] result.items;
-            result.items = new_items;
-
-            for (size_t i = 0; i < e_row - s_row + 1; ++i) {
-                for (size_t j = 0; j < e_col - s_col + 1; ++j) {
-                    result(i, j) = (*this)(s_row + i, s_col + j);
-                }
-            }
-
-            return result;
+        RowProxy operator[](size_t row) {
+            return RowProxy(this->mat->items + row * this->mat->cols, this->mat->cols);
         }
     };
 
-    template <typename T> std::ostream &operator<<(std::ostream &os, const Matrix<T> &m) {
-        os << "[\n";
-        for (size_t i = 0; i < m.rows; ++i) {
-            os << "    ";
-            for (size_t j = 0; j < m.cols; ++j) {
-                os << m(i, j) << (j + 1 == m.cols ? "" : " ");
-            }
-            os << '\n';
-        }
-        os << "]\n";
-        return os;
+    RowView row_view() { return RowView(this); }
+
+    T &operator()(size_t r, size_t c) {
+        if (r >= rows || c >= cols)
+            throw std::out_of_range("Matrix index out of range");
+        return items[r * cols + c];
     }
+
+    const T &operator()(size_t r, size_t c) const {
+        if (r >= rows || c >= cols)
+            throw std::out_of_range("Matrix index out of range");
+        return items[r * cols + c];
+    }
+
+    Matrix operator+(const Matrix &rhs) const {
+        if (rows != rhs.rows || cols != rhs.cols) {
+            throw std::invalid_argument("Matrix +: dimension mismatch");
+        }
+        Matrix result(rows, cols);
+        for (size_t i = 0; i < rows * cols; ++i)
+            result.items[i] = items[i] + rhs.items[i];
+        return result;
+    }
+
+    Matrix &operator+=(const Matrix &rhs) {
+        if (rows != rhs.rows || cols != rhs.cols) {
+            throw std::invalid_argument("Matrix +=: dimension mismatch");
+        }
+        for (size_t i = 0; i < rows * cols; ++i)
+            items[i] += rhs.items[i];
+        return *this;
+    }
+
+    Matrix operator-(const Matrix &rhs) const {
+        if (rows != rhs.rows || cols != rhs.cols) {
+            throw std::invalid_argument("Matrix -: dimension mismatch");
+        }
+        Matrix result(rows, cols);
+        for (size_t i = 0; i < rows * cols; ++i)
+            result.items[i] = items[i] - rhs.items[i];
+        return result;
+    }
+
+    Matrix &operator-=(const Matrix &rhs) {
+        if (rows != rhs.rows || cols != rhs.cols) {
+            throw std::invalid_argument("Matrix -=: dimension mismatch");
+        }
+        for (size_t i = 0; i < rows * cols; ++i)
+            items[i] -= rhs.items[i];
+        return *this;
+    }
+
+    Matrix operator*(const Matrix &rhs) const {
+        if (cols != rhs.rows) {
+            throw std::invalid_argument("Matrix *: dimension mismatch");
+        }
+        Matrix result(rows, rhs.cols);
+        for (size_t i = 0; i < rows; ++i) {
+            for (size_t j = 0; j < rhs.cols; ++j) {
+                T sum = T{};
+                for (size_t k = 0; k < cols; ++k) {
+                    sum += (*this)(i, k) * rhs(k, j);
+                }
+                result(i, j) = sum;
+            }
+        }
+        return result;
+    }
+
+    Matrix operator*(T other) const {
+        Matrix result = *this;
+
+        for (size_t i = 0; i < result.cols * result.rows; ++i) {
+            result.items[i] *= other;
+        }
+
+        return result;
+    }
+
+    Matrix operator*=(T other) const {
+        for (size_t i = 0; i < cols * rows; ++i) {
+            items[i] *= other;
+        }
+        return *this;
+    }
+
+    Matrix operator/(T other) const {
+        Matrix result = *this;
+
+        for (size_t i = 0; i < result.cols * result.rows; ++i) {
+            result.items[i] /= other;
+        }
+
+        return result;
+    }
+
+    Matrix operator/=(T other) const {
+        for (size_t i = 0; i < cols * rows; ++i) {
+            items[i] /= other;
+        }
+        return *this;
+    }
+
+    Matrix &operator=(const Matrix &other) {
+        if (this == &other)
+            return *this;
+        T *newitems = nullptr;
+        if (other.rows * other.cols != 0) {
+            newitems = new T[other.rows * other.cols];
+            for (size_t i = 0; i < other.rows * other.cols; ++i) {
+                newitems[i] = other.items[i];
+            }
+        }
+        delete[] items;
+        items = newitems;
+        rows = other.rows;
+        cols = other.cols;
+        return *this;
+    }
+
+    Matrix &operator=(Matrix &&other) noexcept {
+        if (this == &other)
+            return *this;
+
+        delete[] items;
+        rows = other.rows;
+        cols = other.cols;
+        items = other.items;
+        other.rows = 0;
+        other.cols = 0;
+        other.items = nullptr;
+        return *this;
+    }
+
+    bool operator==(Matrix &other) noexcept {
+        if (rows != other.rows || cols != other.cols) {
+            return false;
+        }
+        for (size_t i = 0; i < rows * cols; ++i) {
+            if (items[i] != other.items[i])
+                return false;
+        }
+        return true;
+    }
+
+    const Matrix transpose() const {
+        size_t new_rows = cols;
+        size_t new_cols = rows;
+
+        Matrix result(new_rows, new_cols);
+
+        T *new_items = new T[rows * cols];
+        size_t i = 0;
+
+        for (size_t j = 0; j < cols; ++j) {
+            for (size_t k = 0; k < rows; ++k) {
+                new_items[i++] = items[k * cols + j];
+            }
+        }
+        result.items = new_items;
+        return result;
+    }
+
+    Matrix take_block(size_t s_row, size_t s_col, size_t e_row, size_t e_col) {
+
+        Matrix result(e_row - s_row + 1, (e_col - s_col + 1));
+
+        T *new_items = new T[(e_row - s_row + 1) * (e_col - s_col + 1)];
+        delete[] result.items;
+        result.items = new_items;
+
+        for (size_t i = 0; i < e_row - s_row + 1; ++i) {
+            for (size_t j = 0; j < e_col - s_col + 1; ++j) {
+                result(i, j) = (*this)(s_row + i, s_col + j);
+            }
+        }
+
+        return result;
+    }
+};
+
+template <typename T> std::ostream &operator<<(std::ostream &os, const Matrix<T> &m) {
+    os << "[\n";
+    for (size_t i = 0; i < m.rows; ++i) {
+        os << "    ";
+        for (size_t j = 0; j < m.cols; ++j) {
+            os << m(i, j) << (j + 1 == m.cols ? "" : " ");
+        }
+        os << '\n';
+    }
+    os << "]\n";
+    return os;
+}
 } // namespace mat
 
 #endif // MATRIX_HPP_
