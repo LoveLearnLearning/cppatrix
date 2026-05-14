@@ -31,7 +31,6 @@ int main() {
     mat::Matrix<double> grad(x_t.row_view()[0].cols, x_t.row_view()[0].rows);
     mat::Matrix<double> d(x_t.row_view()[0].cols, x_t.row_view()[0].rows);
 
-
     for (size_t n = 0; n < 1000 * 10000; ++n) {
         w = reg::dMSE(x_t, y_t, w, b, l_r);
         cost = reg::MSE(x_t, y_t, w, b);
@@ -41,6 +40,4 @@ int main() {
     std::cout << "w: " << w << std::endl;
     std::cout << "b: " << b << std::endl;
     std::cout << "Cost: " << cost << std::endl;
-
-
 }

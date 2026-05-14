@@ -8,108 +8,102 @@
 
 namespace mat {
 
-    template<typename T>
-    class Matrix {
-    public:
-        size_t rows;
-        size_t cols;
-        T *items;
+template <typename T> class Matrix {
+  public:
+    size_t rows;
+    size_t cols;
+    T *items;
 
-        Matrix() : rows(0), cols(0), items(nullptr) {}
+    Matrix() : rows(0), cols(0), items(nullptr) {}
 
-        Matrix(size_t r, size_t c) : rows(r), cols(c) {
-            items = new T[rows * cols]();
-        }
+    Matrix(size_t r, size_t c) : rows(r), cols(c) { items = new T[rows * cols](); }
 
-        Matrix(size_t r, size_t c, std::initializer_list<T> init)
-                    : rows(r), cols(c), items(new T[r * c]) {
-            if (init.size() != r * c) {
-                delete[] items;
-                items = nullptr;
-                throw std::invalid_argument("initializer_list size does not match matrix dimensions");
-            }
-            size_t i = 0;
-            for (const auto& v : init) {
-                items[i++] = v;
-            }
-        }
-
-        Matrix(std::initializer_list<std::initializer_list<T>> init)
-            : rows(init.size()), cols(0), items(nullptr) {
-            if (rows == 0) return;
-
-            cols = init.begin()->size();
-            if (cols == 0) return;
-
-            for (const auto& row : init) {
-                if (row.size() != cols) {
-                    throw std::invalid_argument("All rows must have the same number of columns");
-                }
-            }
-
-            items = new T[rows * cols];
-            size_t idx = 0;
-            for (const auto& row : init) {
-                for (const auto& v : row) {
-                    items[idx++] = v;
-                }
-            }
-        }
-
-        Matrix(const Matrix &other)
-            : rows(other.rows), cols(other.cols), items(nullptr) {
-            if (rows * cols == 0) return;
-            items = new T[rows * cols];
-            for (size_t i = 0; i < rows * cols; ++i) {
-                items[i] = other.items[i];
-            }
-        }
-
-        Matrix(Matrix &&other) noexcept
-            : rows(other.rows), cols(other.cols), items(other.items) {
-                other.rows = 0;
-                other.cols = 0;
-                other.items = nullptr;
-            }
-
-        ~Matrix() {
+    Matrix(size_t r, size_t c, std::initializer_list<T> init)
+        : rows(r), cols(c), items(new T[r * c]) {
+        if (init.size() != r * c) {
             delete[] items;
             items = nullptr;
+            throw std::invalid_argument("initializer_list size does not match matrix dimensions");
+        }
+        size_t i = 0;
+        for (const auto &v : init) {
+            items[i++] = v;
+        }
+    }
+
+    Matrix(std::initializer_list<std::initializer_list<T>> init)
+        : rows(init.size()), cols(0), items(nullptr) {
+        if (rows == 0)
+            return;
+
+        cols = init.begin()->size();
+        if (cols == 0)
+            return;
+
+        for (const auto &row : init) {
+            if (row.size() != cols) {
+                throw std::invalid_argument("All rows must have the same number of columns");
+            }
         }
 
-        class RowIterator {
-        public:
-            size_t current;
-            Matrix* mat;
-
-            RowIterator(Matrix *_mat, size_t val) : mat(_mat), current(val) {}
-
-            Matrix operator*() {
-                Matrix result(1, mat->cols);
-                for (size_t i = 0; i < mat->cols; ++i) {
-                    result(0, i) = (*mat)(current, i);
-                }
-                return result;
+        items = new T[rows * cols];
+        size_t idx = 0;
+        for (const auto &row : init) {
+            for (const auto &v : row) {
+                items[idx++] = v;
             }
+        }
+    }
 
-            RowIterator& operator++() {
-                ++current;
-                return *this;
-            }
+    Matrix(const Matrix &other) : rows(other.rows), cols(other.cols), items(nullptr) {
+        if (rows * cols == 0)
+            return;
+        items = new T[rows * cols];
+        for (size_t i = 0; i < rows * cols; ++i) {
+            items[i] = other.items[i];
+        }
+    }
 
-            bool operator!=(const RowIterator& other) {
-                return current != other.current;
-            }
-        };
+    Matrix(Matrix &&other) noexcept : rows(other.rows), cols(other.cols), items(other.items) {
+        other.rows = 0;
+        other.cols = 0;
+        other.items = nullptr;
+    }
 
-        class ColIterator {
-        private:
+    ~Matrix() {
+        delete[] items;
+        items = nullptr;
+    }
 
+    class RowIterator {
+      public:
         size_t current;
-        Matrix* mat;
+        Matrix *mat;
 
-        public:
+        RowIterator(Matrix *_mat, size_t val) : mat(_mat), current(val) {}
 
+        Matrix operator*() {
+            Matrix result(1, mat->cols);
+            for (size_t i = 0; i < mat->cols; ++i) {
+                result(0, i) = (*mat)(current, i);
+            }
+            return result;
+        }
+
+        RowIterator &operator++() {
+            ++current;
+            return *this;
+        }
+
+        bool operator!=(const RowIterator &other) { return current != other.current; }
+    };
+
+    class ColIterator {
+      private:
+        size_t current;
+        Matrix *mat;
+
+      public:
         ColIterator(Matrix *_mat, size_t val) : mat(_mat), current(val) {}
 
         Matrix operator*() {
@@ -120,76 +114,70 @@ namespace mat {
             return result;
         }
 
-        ColIterator& operator++() {
+        ColIterator &operator++() {
             ++current;
             return *this;
         }
 
-        bool operator!=(const ColIterator& other) {
-            return current != other.current;
+        bool operator!=(const ColIterator &other) { return current != other.current; }
+    };
+
+    class ColView {
+      private:
+        Matrix *mat;
+
+      public:
+        ColView(Matrix *_mat) : mat(_mat) {}
+
+        ColIterator begin() { return ColIterator(this->mat, 0); }
+        ColIterator end() { return ColIterator(this->mat, this->mat->cols); }
+
+        Matrix operator[](size_t col) {
+            size_t row = this->mat->rows;
+            Matrix result(row, 1);
+            T *newitems = new T[row];
+            for (size_t i = 0; i < row; ++i) {
+                newitems[i] = this->mat->items[col * row + i];
+            }
+            result.items = newitems;
+            return result;
         }
+    };
 
-        };
+    ColView col_view() { return ColView(this); }
 
-        class ColView {
-        private:
-            Matrix *mat;
+    class RowView {
+      private:
+        Matrix *mat;
 
-        public:
+      public:
+        RowView(Matrix *_mat) : mat(_mat) {}
 
-            ColView(Matrix *_mat) : mat(_mat) {}
+        RowIterator begin() { return RowIterator(this->mat, 0); }
+        RowIterator end() { return RowIterator(this->mat, this->mat->rows); }
 
-            ColIterator begin() { return ColIterator(this->mat, 0); }
-            ColIterator end() { return ColIterator(this->mat, this->mat->cols); }
-
-            Matrix operator[] (size_t col) {
-                size_t row = this->mat->rows;
-                Matrix result(row, 1);
-                T *newitems = new T[row];
-                for (size_t i = 0; i < row; ++i) {
-                    newitems[i] = this->mat->items[col * row + i];
-                }
-                result.items = newitems;
-                return result;
+        Matrix operator[](size_t row) {
+            size_t col = this->mat->cols;
+            Matrix result(1, col);
+            T *newitems = new T[col];
+            for (size_t i = 0; i < col; ++i) {
+                newitems[i] = (this->mat->items)[col * row + i];
             }
-
-        };
-
-        ColView col_view() { return ColView(this); }
-
-        class RowView {
-        private:
-            Matrix *mat;
-
-        public:
-
-            RowView(Matrix *_mat) : mat(_mat) {}
-
-            RowIterator begin() { return RowIterator(this->mat, 0); }
-            RowIterator end() { return RowIterator(this->mat, this->mat->rows); }
-
-            Matrix operator[] (size_t row) {
-                size_t col = this->mat->cols;
-                Matrix result(1, col);
-                T *newitems = new T[col];
-                for (size_t i = 0; i < col; ++i) {
-                    newitems[i] = (this->mat->items)[col * row + i];
-                }
-                result.items = newitems;
-                return result;
-            }
+            result.items = newitems;
+            return result;
         };
 
         RowView row_view() { return RowView(this); }
 
-
-        T& operator()(size_t r, size_t c) {
-            if (r >= rows || c >= cols) throw std::out_of_range("Matrix index out of range");
+        T &operator()(size_t r, size_t c) {
+            if (r >= rows || c >= cols)
+                throw std::out_of_range("Matrix index out of range");
             return items[r * cols + c];
         }
 
-        const T& operator()(size_t r, size_t c) const {
-            if (r >= rows || c >= cols) throw std::out_of_range("Matrix index out of range");
+        const T &operator()(size_t r, size_t c) const {
+            if (r >= rows || c >= cols)
+                throw std::out_of_range("Matrix index out of range");
             return items[r * cols + c];
         }
 
@@ -198,15 +186,17 @@ namespace mat {
                 throw std::invalid_argument("Matrix +: dimension mismatch");
             }
             Matrix result(rows, cols);
-            for (size_t i = 0; i < rows * cols; ++i) result.items[i] = items[i] + rhs.items[i];
+            for (size_t i = 0; i < rows * cols; ++i)
+                result.items[i] = items[i] + rhs.items[i];
             return result;
         }
 
-        Matrix& operator+=(const Matrix &rhs) {
+        Matrix &operator+=(const Matrix &rhs) {
             if (rows != rhs.rows || cols != rhs.cols) {
                 throw std::invalid_argument("Matrix +=: dimension mismatch");
             }
-            for (size_t i = 0; i < rows * cols; ++i) items[i] += rhs.items[i];
+            for (size_t i = 0; i < rows * cols; ++i)
+                items[i] += rhs.items[i];
             return *this;
         }
 
@@ -215,19 +205,21 @@ namespace mat {
                 throw std::invalid_argument("Matrix -: dimension mismatch");
             }
             Matrix result(rows, cols);
-            for (size_t i = 0; i < rows * cols; ++i) result.items[i] = items[i] - rhs.items[i];
+            for (size_t i = 0; i < rows * cols; ++i)
+                result.items[i] = items[i] - rhs.items[i];
             return result;
         }
 
-        Matrix& operator-=(const Matrix &rhs) {
+        Matrix &operator-=(const Matrix &rhs) {
             if (rows != rhs.rows || cols != rhs.cols) {
                 throw std::invalid_argument("Matrix -=: dimension mismatch");
             }
-            for (size_t i = 0; i < rows * cols; ++i) items[i] -= rhs.items[i];
+            for (size_t i = 0; i < rows * cols; ++i)
+                items[i] -= rhs.items[i];
             return *this;
         }
 
-        Matrix operator*(const Matrix& rhs) const {
+        Matrix operator*(const Matrix &rhs) const {
             if (cols != rhs.rows) {
                 throw std::invalid_argument("Matrix *: dimension mismatch");
             }
@@ -261,9 +253,27 @@ namespace mat {
             return *this;
         }
 
-        Matrix& operator=(const Matrix &other) {
-            if (this == &other) return *this;
-            T* newitems = nullptr;
+        Matrix operator/(T other) const {
+            Matrix result = *this;
+
+            for (size_t i = 0; i < result.cols * result.rows; ++i) {
+                result.items[i] /= other;
+            }
+
+            return result;
+        }
+
+        Matrix operator/=(T other) const {
+            for (size_t i = 0; i < cols * rows; ++i) {
+                items[i] /= other;
+            }
+            return *this;
+        }
+
+        Matrix &operator=(const Matrix &other) {
+            if (this == &other)
+                return *this;
+            T *newitems = nullptr;
             if (other.rows * other.cols != 0) {
                 newitems = new T[other.rows * other.cols];
                 for (size_t i = 0; i < other.rows * other.cols; ++i) {
@@ -275,11 +285,11 @@ namespace mat {
             rows = other.rows;
             cols = other.cols;
             return *this;
-
         }
 
-        Matrix& operator=(Matrix &&other) noexcept {
-            if (this == &other) return *this;
+        Matrix &operator=(Matrix &&other) noexcept {
+            if (this == &other)
+                return *this;
 
             delete[] items;
             rows = other.rows;
@@ -289,7 +299,17 @@ namespace mat {
             other.cols = 0;
             other.items = nullptr;
             return *this;
+        }
 
+        bool operator==(Matrix &other) noexcept {
+            if (rows != other.rows || cols != other.cols) {
+                return false;
+            }
+            for (size_t i = 0; i < rows * cols; ++i) {
+                if (items[i] != other.items[i])
+                    return false;
+            }
+            return true;
         }
 
         const Matrix transpose() const {
@@ -325,14 +345,10 @@ namespace mat {
             }
 
             return result;
-
         }
-
-
     };
 
-    template<typename T>
-    std::ostream& operator<<(std::ostream& os, const Matrix<T>& m) {
+    template <typename T> std::ostream &operator<<(std::ostream &os, const Matrix<T> &m) {
         os << "[\n";
         for (size_t i = 0; i < m.rows; ++i) {
             os << "    ";
@@ -344,6 +360,6 @@ namespace mat {
         os << "]\n";
         return os;
     }
-}
+} // namespace mat
 
-#endif //MATRIX_HPP_
+#endif // MATRIX_HPP_
