@@ -28,8 +28,10 @@ int main() {
     std::cout << "Cost: " << cost << std::endl;
 
     double l_r = 1e-3;
-    mat::Matrix<double> grad(x_t.row_view()[0].cols, x_t.row_view()[0].rows);
-    mat::Matrix<double> d(x_t.row_view()[0].cols, x_t.row_view()[0].rows);
+    mat::Matrix<double> grad(mat::Matrix<double>(x_t.row_view()[0]).cols,
+                             mat::Matrix<double>(x_t.row_view()[0]).rows);
+    mat::Matrix<double> d(mat::Matrix<double>(x_t.row_view()[0]).cols,
+                          mat::Matrix<double>(x_t.row_view()[0]).rows);
 
     for (size_t n = 0; n < 1000 * 10000; ++n) {
         w = reg::dMSE(x_t, y_t, w, b, l_r);

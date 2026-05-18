@@ -132,15 +132,43 @@ template <typename T> class Matrix {
         ColIterator begin() { return ColIterator(this->mat, 0); }
         ColIterator end() { return ColIterator(this->mat, this->mat->cols); }
 
-        Matrix operator[](size_t col) {
-            size_t row = this->mat->rows;
-            Matrix result(row, 1);
-            T *newitems = new T[row];
-            for (size_t i = 0; i < row; ++i) {
-                newitems[i] = this->mat->items[col * row + i];
+        class ColProxy {
+            T *data;
+            size_t rows;
+            size_t stride;
+
+          public:
+            ColProxy(T *d, size_t r, size_t s) : data(d), rows(r), stride(s) {}
+
+            T &operator[](size_t row) { return data[row]; }
+            const T &operator[](size_t row) const { return data[row]; }
+
+            operator Matrix() const {
+                Matrix result(rows, 1);
+                for (size_t i = 0; i < rows; ++i)
+                    result.items[i] = data[i + stride];
+                return result;
             }
-            result.items = newitems;
-            return result;
+
+            ColProxy &operator=(const Matrix &other) {
+                if (other.cols != 1 || other.rows != rows)
+                    throw std::invalid_argument("ColProxy =: dimention mismatch");
+                for (size_t i = 0; i < rows; ++i)
+                    data[i + stride] = other.items[i];
+                return *this;
+            }
+
+            ColProxy &operator=(const ColProxy &other) {
+                if (other.rows != rows)
+                    throw std::invalid_argument("ColProxy =: dimention mismatch");
+                for (size_t i = 0; i < rows; ++i)
+                    data[i] = other.data[i];
+                return *this;
+            }
+        };
+
+        ColProxy operator[](size_t col) {
+            return ColProxy(this->mat->items + col, this->mat->rows, this->mat->cols);
         }
     };
 
@@ -274,7 +302,7 @@ template <typename T> class Matrix {
         return result;
     }
 
-    Matrix operator*=(T other) const {
+    Matrix operator*=(T other) {
         for (size_t i = 0; i < cols * rows; ++i) {
             items[i] *= other;
         }
@@ -291,7 +319,7 @@ template <typename T> class Matrix {
         return result;
     }
 
-    Matrix operator/=(T other) const {
+    Matrix operator/=(T other) {
         for (size_t i = 0; i < cols * rows; ++i) {
             items[i] /= other;
         }
@@ -354,7 +382,9 @@ template <typename T> class Matrix {
                 new_items[i++] = items[k * cols + j];
             }
         }
+        T *temp = result.items;
         result.items = new_items;
+        delete[] temp;
         return result;
     }
 
@@ -363,8 +393,9 @@ template <typename T> class Matrix {
         Matrix result(e_row - s_row + 1, (e_col - s_col + 1));
 
         T *new_items = new T[(e_row - s_row + 1) * (e_col - s_col + 1)];
-        delete[] result.items;
+        T *temp = result.items;
         result.items = new_items;
+        delete[] temp;
 
         for (size_t i = 0; i < e_row - s_row + 1; ++i) {
             for (size_t j = 0; j < e_col - s_col + 1; ++j) {

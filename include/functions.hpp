@@ -35,8 +35,9 @@ template <typename T> T dist(const mat::Matrix<T> &mat1, const mat::Matrix<T> &m
     for (size_t i = 0; i < mat1.cols; i++) {
         sum += pow((mat1(0, i) - mat2(0, i)), 2);
     }
-    return pow(sum, 1 / mat1.cols);
+    return pow(sum, 1.f / mat1.cols);
 }
+
 } // namespace func
 
 #endif // FUNCTIONS_HPP_
