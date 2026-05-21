@@ -3,7 +3,6 @@
 #include <iostream>
 
 int main() {
-#if 0
     mat::Matrix<double> data = {
         {1, 2}, {2, 2}, {1, 3}, {2, 4}, {3, 3}, {4, 3}, {4, 4},
     };
@@ -11,7 +10,6 @@ int main() {
     mat::Matrix<double> new_centroid = clus::kmeans(data, 2);
 
     std::cout << new_centroid << std::endl;
-#endif
 
     mat::Matrix<double> vec1 = {
         {1, 3, 2, 1, 2, 1, 1},
