@@ -6,6 +6,7 @@
 #include <functional>
 #include <initializer_list>
 #include <ostream>
+#include <raylib.h>
 #include <stdexcept>
 
 namespace mat {
@@ -483,10 +484,23 @@ template <typename T> class Matrix {
 
     Matrix apply(std::function<T(T)> f) const { return f(*this); }
 
-    static Matrix zeros(size_t r, size_t c);
-    static Matrix ones(size_t r, size_t c);
-    static Matrix eye(size_t n);
-    static Matrix random(size_t r, size_t c, T lo, T hi);
+    static Matrix zeros(size_t r, size_t c) { return Matrix(r, c); }
+
+    static Matrix ones(size_t r, size_t c) {
+        Matrix result(r, c);
+        for (size_t i = 0; i < r * c; ++i) {
+            result.items[i] = 1;
+        }
+        return result;
+    }
+
+    static Matrix eye(size_t n) {
+        Matrix result(n, n);
+        for (size_t i = 0; i < n; ++i) {
+            result(i, i) = 1;
+        }
+        return result;
+    }
 };
 
 template <typename T> std::ostream &operator<<(std::ostream &os, const Matrix<T> &m) {
