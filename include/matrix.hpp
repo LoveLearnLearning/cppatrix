@@ -2,11 +2,18 @@
 #define MATRIX_HPP_
 
 #include <cstddef>
+#include <cstdio>
+#include <functional>
 #include <initializer_list>
 #include <ostream>
 #include <stdexcept>
 
 namespace mat {
+
+enum class Axis {
+    ROW,
+    COL,
+};
 
 template <typename T> class Matrix {
   public:
@@ -140,13 +147,13 @@ template <typename T> class Matrix {
           public:
             ColProxy(T *d, size_t r, size_t s) : data(d), rows(r), stride(s) {}
 
-            T &operator[](size_t row) { return data[row]; }
-            const T &operator[](size_t row) const { return data[row]; }
+            T &operator[](size_t row) { return data[row * stride]; }
+            const T &operator[](size_t row) const { return data[row * stride]; }
 
             operator Matrix() const {
                 Matrix result(rows, 1);
                 for (size_t i = 0; i < rows; ++i)
-                    result.items[i] = data[i + stride];
+                    result.items[i] = data[i * stride];
                 return result;
             }
 
@@ -154,7 +161,7 @@ template <typename T> class Matrix {
                 if (other.cols != 1 || other.rows != rows)
                     throw std::invalid_argument("ColProxy =: dimention mismatch");
                 for (size_t i = 0; i < rows; ++i)
-                    data[i + stride] = other.items[i];
+                    data[i * stride] = other.items[i];
                 return *this;
             }
 
@@ -162,7 +169,7 @@ template <typename T> class Matrix {
                 if (other.rows != rows)
                     throw std::invalid_argument("ColProxy =: dimention mismatch");
                 for (size_t i = 0; i < rows; ++i)
-                    data[i] = other.data[i];
+                    data[i * stride] = other.data[i * other.stride];
                 return *this;
             }
         };
@@ -302,7 +309,7 @@ template <typename T> class Matrix {
         return result;
     }
 
-    Matrix operator*=(T other) {
+    Matrix &operator*=(T other) {
         for (size_t i = 0; i < cols * rows; ++i) {
             items[i] *= other;
         }
@@ -319,7 +326,7 @@ template <typename T> class Matrix {
         return result;
     }
 
-    Matrix operator/=(T other) {
+    Matrix &operator/=(T other) {
         for (size_t i = 0; i < cols * rows; ++i) {
             items[i] /= other;
         }
@@ -357,7 +364,7 @@ template <typename T> class Matrix {
         return *this;
     }
 
-    bool operator==(Matrix &other) noexcept {
+    bool operator==(const Matrix &other) const noexcept {
         if (rows != other.rows || cols != other.cols) {
             return false;
         }
@@ -368,7 +375,7 @@ template <typename T> class Matrix {
         return true;
     }
 
-    const Matrix transpose() const {
+    Matrix transpose() const {
         size_t new_rows = cols;
         size_t new_cols = rows;
 
@@ -390,6 +397,9 @@ template <typename T> class Matrix {
 
     Matrix take_block(size_t s_row, size_t s_col, size_t e_row, size_t e_col) {
 
+        if (e_row >= rows || e_col >= cols || s_row > e_row || s_col > e_col)
+            throw std::out_of_range("take_block: index out of range");
+
         Matrix result(e_row - s_row + 1, (e_col - s_col + 1));
 
         T *new_items = new T[(e_row - s_row + 1) * (e_col - s_col + 1)];
@@ -405,6 +415,78 @@ template <typename T> class Matrix {
 
         return result;
     }
+
+    Matrix hadamard(const Matrix &rhs) const {
+        if (rows != rhs.rows || cols != rhs.cols) {
+            throw std::out_of_range("hadamard: dimension mismatch!");
+        }
+
+        Matrix result(rows, cols);
+
+        for (size_t i = 0; i < rows * cols; ++i) {
+            result.items[i] = items[i] * rhs.items[i];
+        }
+        return result;
+    }
+
+    Matrix sum(Axis axis) const {
+        if (axis == Axis::ROW) {
+            Matrix result(rows, 1);
+            for (size_t i = 0; i < rows; ++i) {
+                T sum = 0;
+                for (size_t j = 0; j < cols; ++j) {
+                    sum += items[i * cols + j];
+                }
+                result.items[i] = sum;
+            }
+            return result;
+        } else if (axis == Axis::COL) {
+            Matrix result(1, cols);
+            for (size_t i = 0; i < cols; ++i) {
+                T sum = 0;
+                for (size_t j = 0; j < rows; ++j) {
+                    sum += items[j * cols + i];
+                }
+                result.items[i] = sum;
+            }
+            return result;
+        } else {
+            throw std::runtime_error("UNKNOWN Axis type, example: ROW, COL");
+        }
+    }
+
+    Matrix mean(Axis axis) const {
+        if (axis == Axis::ROW) {
+            Matrix result(rows, 1);
+            for (size_t i = 0; i < rows; ++i) {
+                T sum = 0;
+                for (size_t j = 0; j < cols; ++j) {
+                    sum += items[i * cols + j];
+                }
+                result.items[i] = sum / cols;
+            }
+            return result;
+        } else if (axis == Axis::COL) {
+            Matrix result(1, cols);
+            for (size_t i = 0; i < cols; ++i) {
+                T sum = 0;
+                for (size_t j = 0; j < rows; ++j) {
+                    sum += items[j * cols + i];
+                }
+                result.items[i] = sum / rows;
+            }
+            return result;
+        } else {
+            throw std::runtime_error("UNKNOWN Axis type, example: ROW, COL");
+        }
+    }
+
+    Matrix apply(std::function<T(T)> f) const { return f(*this); }
+
+    static Matrix zeros(size_t r, size_t c);
+    static Matrix ones(size_t r, size_t c);
+    static Matrix eye(size_t n);
+    static Matrix random(size_t r, size_t c, T lo, T hi);
 };
 
 template <typename T> std::ostream &operator<<(std::ostream &os, const Matrix<T> &m) {
