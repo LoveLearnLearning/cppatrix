@@ -1,12 +1,9 @@
 #ifndef MATRIX_HPP_
 #define MATRIX_HPP_
 
-#include <cstddef>
-#include <cstdio>
 #include <functional>
 #include <initializer_list>
 #include <ostream>
-#include <raylib.h>
 #include <stdexcept>
 
 namespace mat {

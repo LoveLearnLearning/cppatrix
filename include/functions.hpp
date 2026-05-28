@@ -7,9 +7,12 @@
 #include <stdexcept>
 
 namespace func {
+
 double sigmoidf2(double x);
 
 double randf(double down, double top);
+
+mat::Matrix<double> randmat(size_t r, size_t c, double down, double top);
 
 template <typename T> void randmat(mat::Matrix<T> &mat, double down, double top) {
     T *temp = mat.items;
@@ -27,7 +30,7 @@ template <typename T> void sigmoid_mat(const mat::Matrix<T> &mat) {
     }
 }
 
-template <typename T> T dist(const mat::Matrix<T> &mat1, const mat::Matrix<T> &mat2) {
+template <typename T> double dist(const mat::Matrix<T> &mat1, const mat::Matrix<T> &mat2) {
     if (mat1.rows != 1 && mat2.rows != 1 && mat1.cols != mat2.cols) {
         throw std::invalid_argument("Distance dimension do not match!");
     }
