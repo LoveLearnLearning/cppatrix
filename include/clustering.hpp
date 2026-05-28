@@ -7,9 +7,16 @@
 
 namespace clus {
 
+struct Point {
+    int id;
+    mat::Matrix<double> point;
+    int cluster_id;
+};
+
 struct Cluster {
+    int id;
     mat::Matrix<double> centroid;
-    std::vector<mat::Matrix<double>> points;
+    std::vector<mat::Matrix<double> *> points;
 
     Cluster() = default;
     Cluster(const mat::Matrix<double> &centroid) : centroid(centroid) {}
