@@ -1,7 +1,6 @@
 #ifndef MATRIX_HPP_
 #define MATRIX_HPP_
 
-#include <functional>
 #include <initializer_list>
 #include <ostream>
 #include <stdexcept>
@@ -478,8 +477,6 @@ template <typename T> class Matrix {
             throw std::runtime_error("UNKNOWN Axis type, example: ROW, COL");
         }
     }
-
-    Matrix apply(std::function<T(T)> f) const { return f(*this); }
 
     static Matrix zeros(size_t r, size_t c) { return Matrix(r, c); }
 
