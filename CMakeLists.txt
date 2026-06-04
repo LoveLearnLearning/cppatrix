@@ -16,11 +16,15 @@ file(GLOB SRC_FILES
     "${CMAKE_SOURCE_DIR}/sources/graph.cpp"
 )
 
-add_compile_options(-fsanitize=address -fno-omit-frame-pointer -g -O1)
-add_link_options(-fsanitize=address)
-
-add_compile_options(-fsanitize=undefined,array-bounds -fno-omit-frame-pointer -g -O1)
-add_link_options(-fsanitize=undefined,array-bounds)
+# Sanitizers are opt-in: AddressSanitizer deadlocks at startup on recent macOS
+# (Darwin 25) due to an ASan/dyld re-entrancy bug. Enable with -DSANITIZE=ON.
+option(SANITIZE "Enable Address/UB sanitizers" OFF)
+if(SANITIZE)
+    add_compile_options(-fsanitize=address,undefined,array-bounds -fno-omit-frame-pointer -g -O1)
+    add_link_options(-fsanitize=address,undefined,array-bounds)
+else()
+    add_compile_options(-g -O1)
+endif()
 
 add_executable(cppatrix main.cpp ${SRC_FILES})
 target_link_libraries(cppatrix PRIVATE raylib)

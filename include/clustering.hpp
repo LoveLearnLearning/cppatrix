@@ -4,41 +4,36 @@
 #include "functions.hpp"
 #include "matrix.hpp"
 #include <cstddef>
+#include <limits>
 #include <vector>
 
 namespace clus {
 
 struct Point {
-    int id;
+    size_t id;
     mat::Matrix<double> point;
-    int cluster_id;
+    size_t cluster_id;
 
     Point() = default;
 
-    Point(int _id, mat::Matrix<double> &_point, int _cluster_id)
+    Point(size_t _id, mat::Matrix<double> &_point, size_t _cluster_id)
         : id(_id), point(_point), cluster_id(_cluster_id) {}
 };
 
 struct Cluster {
-    int id;
+    size_t id;
     mat::Matrix<double> centroid;
-    std::vector<mat::Matrix<double> *> points;
+    std::vector<Point *> points;
 
     Cluster() = default;
 
-    Cluster(const mat::Matrix<double> &centroid) : centroid(centroid) {}
-
-    Cluster(int _id, const mat::Matrix<double> &_centroid,
-            std::vector<mat::Matrix<double> *> _points)
-        : id(_id), centroid(_centroid), points(_points) {}
+    Cluster(size_t _id, const mat::Matrix<double> &_centroid) : id(_id), centroid(_centroid) {}
 };
 
-template <typename T> std::vector<Cluster> kmeans(mat::Matrix<T> &data, size_t k) {
-
+mat::Matrix<double> kmeans(mat::Matrix<double> &data, size_t k, size_t iter) {
     std::vector<Cluster> clusters;
-    for (size_t i = 0; i < k; ++i) {
-        clusters.push_back(Cluster(i, func::randmat(1, data.cols, 0, 10), nullptr));
-    }
+    for (size_t i = 0; i < k; ++i)
+        clusters.push_back(Cluster(i, func::randmat(1, data.cols, 0, 5)));
 
     std::vector<Point *> points;
     for (size_t i = 0; i < data.rows; ++i) {
@@ -46,14 +41,47 @@ template <typename T> std::vector<Cluster> kmeans(mat::Matrix<T> &data, size_t k
         points.push_back(new Point(i, point, 0));
     }
 
-    for (size_t i = 0; i < points.size(); ++i) {
-        for (size_t j = 0; j < clusters.size(); ++i) {
-            double dist = func::dist(points[i]->point, clusters[i].centroid);
+    while (iter--) {
+        for (size_t i = 0; i < points.size(); ++i) {
+            double min = std::numeric_limits<double>::max();
+            for (size_t j = 0; j < clusters.size(); ++j) {
+                double d = func::dist(points[i]->point, clusters[j].centroid);
+                if (d < min) {
+                    min = d;
+                    points[i]->cluster_id = j;
+                }
+            }
+        }
+
+        for (size_t i = 0; i < clusters.size(); ++i) {
+            clusters[i].points.clear();
+            for (auto point : points) {
+                if (point->cluster_id == i)
+                    clusters[i].points.push_back(point);
+            }
+        }
+
+        for (size_t i = 0; i < clusters.size(); ++i) {
+            if (clusters[i].points.empty())
+                continue;
+            mat::Matrix<double> new_center(1, data.cols);
+            for (auto point : clusters[i].points)
+                new_center += point->point;
+            new_center /= (double)clusters[i].points.size();
+            clusters[i].centroid = new_center;
         }
     }
 
-    return clusters;
+    mat::Matrix<double> result(k, data.cols);
+    for (size_t i = 0; i < k; ++i)
+        result.row_view()[i] = clusters[i].centroid;
+
+    for (auto p : points)
+        delete p;
+
+    return result;
 }
+
 } // namespace clus
 
 #endif // CLUSTERTING_HPP_
