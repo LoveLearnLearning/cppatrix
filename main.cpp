@@ -5,7 +5,7 @@
 #include <iostream>
 
 #define WIDTH 1280
-#define HEIGHT 800
+#define HEIGHT 900
 
 #define POINT_RADIUS 15
 
@@ -21,12 +21,11 @@ int main() {
 
     InitWindow(WIDTH, HEIGHT, "Hello Raylib!");
 
-    mat::Matrix<double> data = {
-        {1, 2}, {1, 3}, {1, 4}, {2, 3}, {2, 4}, {3, 3}, {4, 4}, {3, 4},
-    };
+    mat::Matrix<double> data = {{1, 2}, {1, 3}, {1, 4}, {2, 3}, {2, 4}, {3, 3},
+                                {4, 4}, {3, 4}, {1, 7}, {2, 6}, {2, 7}};
 
     std::vector<Vector2> centroids;
-    mat::Matrix<double> centers = clus::kmeans(data, 2, 100000);
+    mat::Matrix<double> centers = clus::kmeans(data, 2, 100000000);
     std::cout << centers;
     for (auto centroid : centers.row_view()) {
         centroids.push_back(matrix_to_raylib_Vector2(centroid));

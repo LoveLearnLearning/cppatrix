@@ -5,3 +5,5 @@ build/
 
 *.out.dSYM/
 *.out
+
+rustrix/target/
