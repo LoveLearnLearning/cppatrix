@@ -14,5 +14,5 @@ fn main() {
     m5 *= 2;
     println!("{}", m2);
     println!("{}", m3);
-    println!("{}", m5);
+    println!("{:?}", m5.row(1));
 }

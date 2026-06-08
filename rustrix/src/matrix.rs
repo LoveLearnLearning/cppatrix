@@ -27,6 +27,24 @@ impl<T: Default + Clone> Matrix<T> {
             data: (_data),
         }
     }
+
+    pub fn row_iter(&self) -> RowIter<T> {
+        RowIter {
+            matrix: (self),
+            current: (0),
+        }
+    }
+
+    pub fn col_iter(&self) -> ColIter<T> {
+        ColIter {
+            matrix: (self),
+            current: (0),
+        }
+    }
+
+    pub fn row(&self, i: usize) -> &[T] {
+        &self.data[i * self.cols..(i + 1) * self.cols]
+    }
 }
 
 impl<T: Clone> Index<(usize, usize)> for Matrix<T> {
@@ -140,6 +158,44 @@ impl<T: Clone + SubAssign> SubAssign for Matrix<T> {
         assert_eq!(self.cols, rhs.cols);
         for i in 0..self.data.len() {
             self.data[i] -= rhs.data[i].clone();
+        }
+    }
+}
+
+pub struct RowIter<'a, T> {
+    matrix: &'a Matrix<T>,
+    current: usize,
+}
+
+impl<'a, T> Iterator for RowIter<'a, T> {
+    type Item = &'a [T];
+    fn next(&mut self) -> Option<Self::Item> {
+        if self.current < self.matrix.rows {
+            let start = self.current * self.matrix.cols;
+            self.current += 1;
+            Some(&self.matrix.data[start..start + self.matrix.cols])
+        } else {
+            None
+        }
+    }
+}
+
+pub struct ColIter<'a, T> {
+    matrix: &'a Matrix<T>,
+    current: usize,
+}
+
+impl<'a, T> Iterator for ColIter<'a, T> {
+    type Item = Vec<&'a T>;
+    fn next(&mut self) -> Option<Self::Item> {
+        if self.current < self.matrix.cols {
+            let col = (0..self.matrix.rows)
+                .map(|r| &self.matrix.data[r * self.matrix.cols + self.current])
+                .collect();
+            self.current += 1;
+            Some(col)
+        } else {
+            None
         }
     }
 }
