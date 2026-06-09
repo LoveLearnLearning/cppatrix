@@ -28,14 +28,14 @@ impl<T: Default + Clone> Matrix<T> {
         }
     }
 
-    pub fn row_iter(&self) -> RowIter<T> {
+    pub fn row_iter(&self) -> RowIter<'_, T> {
         RowIter {
             matrix: (self),
             current: (0),
         }
     }
 
-    pub fn col_iter(&self) -> ColIter<T> {
+    pub fn col_iter(&self) -> ColIter<'_, T> {
         ColIter {
             matrix: (self),
             current: (0),
@@ -44,6 +44,14 @@ impl<T: Default + Clone> Matrix<T> {
 
     pub fn row(&self, i: usize) -> &[T] {
         &self.data[i * self.cols..(i + 1) * self.cols]
+    }
+
+    pub fn get_rows(&self) -> usize {
+        self.rows
+    }
+
+    pub fn get_cols(&self) -> usize {
+        self.cols
     }
 }
 
@@ -112,12 +120,6 @@ impl<T: Default + Clone + Mul<Output = T> + MulAssign> Mul<T> for Matrix<T> {
             result.data[i] *= rhs.clone();
         }
         result
-    }
-}
-impl<T: Default + Clone + Mul<Output = T> + AddAssign> Mul<Matrix<T>> for &Matrix<T> {
-    type Output = Matrix<T>;
-    fn mul(self, rhs: Self) -> Self::Output {
-        self.clone() * rhs.clone()
     }
 }
 
