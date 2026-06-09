@@ -1,4 +1,5 @@
 mod matrix;
+mod regression;
 
 use matrix::Matrix;
 

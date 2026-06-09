@@ -114,6 +114,12 @@ impl<T: Default + Clone + Mul<Output = T> + MulAssign> Mul<T> for Matrix<T> {
         result
     }
 }
+impl<T: Default + Clone + Mul<Output = T> + AddAssign> Mul<Matrix<T>> for &Matrix<T> {
+    type Output = Matrix<T>;
+    fn mul(self, rhs: Self) -> Self::Output {
+        self.clone() * rhs.clone()
+    }
+}
 
 impl<T: Clone + MulAssign> MulAssign<T> for Matrix<T> {
     fn mul_assign(&mut self, rhs: T) {
